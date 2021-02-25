@@ -487,15 +487,15 @@ erase_sector
 
      	call map_key_to_page
 
-;	Return for more input if 0-7 wasn't pressed.
+;	Return for more input if 0-2 wasn't pressed.
 
       	cp 8
       	jp p, .repoll
 
 ;	Warn if the user's trying to overwrite sector
-;	1 (pages 4-7), page 4 contains this flash utility.
+;	4, page 4 contains this flash utility.
 
-      	cp 1
+      	cp 4
       	jr z, .yourekillingme
 
 .doerase
@@ -710,8 +710,8 @@ F_FlashReadId
 	ret
 
 ;
-; 	EraseSector subroutine erases a 64K Flash ROM sector. It's designed
-; 	for 4 megabit chips like the Am29F040.
+; 	EraseSector subroutine erases a 16K Flash ROM sector. It's designed
+; 	for 1 megabit chips like the Am29F010.
 ; 	This function will page in the sector and erase it.
 ; 	Pass the page in A
 ; 	On error, carry flag set.
@@ -741,8 +741,8 @@ F_FlashEraseSector
 
 ; 	Multiply by 4 and set /ROMCS high
 
-      	rla
-      	rla
+      	;rla
+      	;rla
       	or 32
       	out (ROMPAGE_PORT), A
 
@@ -950,15 +950,9 @@ map_dev_next
 ;
 ;	Chip string table
 ;
-chip_amic_a29040b
-	defb "AMIC A29040B", 0
+chip_amd_am29f010b
+	defb "AMD AM29F010B", 0
 
-chip_amd_am29f040b
-	defb "AMD AM29F040B", 0
-
-chip_amd_am29f040
-	defb "AMD AM29F040", 0
-	
 ;
 ;	Map info table - each entry is six bytes long
 ;	Bytes 0-1: Mfr Id/Device ID
@@ -968,23 +962,11 @@ chip_amd_am29f040
 ;
 map_info_table
 
-;	AMIC A29040B - 32 pages, 64K sectors
+;	AMD AM29F010B - 8 pages, 16K sectors
 
-	defb 0x37, 0x86
-	defw chip_amic_a29040b
-	defb 32, 64
-
-;	AMD AM29F040B - 32 pages, 64K sectors
-
-	defb 0xc2, 0xa4
-	defw chip_amd_am29f040b
-	defb 32,64
-
-;	AMD AM29F040 - 32 pages, 64K sectors
-
-	defb 0x01, 0xa4
-	defw chip_amd_am29f040
-	defb 32,64
+	defb 0x01, 0x20
+	defw chip_amd_am29f010b
+	defb 8,16
 	
 ;	Table end
 
@@ -1021,23 +1003,7 @@ str_p1
 str_p2
 	defb "3: Page 3", TAB, 90, "4: Page 4", TAB, 180, "5: Page 5\n"
 str_p3
-	defb "6: Page 6", TAB, 90, "7: Page 7", TAB, 180, "8: Page 8\n"
-str_p4
-	defb "9: Page 9", TAB, 90, "a: Page 10", TAB, 180, "b: Page 11\n"
-str_p5
-	defb "c: Page 12", TAB, 90, "d: Page 13", TAB, 180, "e: Page 14\n"
-str_p6
-	defb "f: Page 15", TAB, 90, "g: Page 16", TAB, 180, "h: Page 17\n"
-str_p7
-	defb "i: Page 18", TAB, 90, "j: Page 19", TAB, 180, "k: Page 20\n"
-str_p8
-	defb "l: Page 21", TAB, 90, "m: Page 22", TAB, 180, "n: Page 23\n"
-str_p9
-	defb "o: Page 24", TAB, 90, "p: Page 25", TAB, 180, "q: Page 26\n"
-str_p10
-	defb "r: Page 27", TAB, 90, "s: Page 28", TAB, 180, "t: Page 29\n"
-str_p11
-	defb "u: Page 30", TAB, 90, "v: Page 31\n\n",0
+	defb "6: Page 6", TAB, 90, "7: Page 7\n\n",0
 
 str_others
 	defb "Press ", TEXTBOLD, INK, 2,"ENTER ", TEXTNORM, INK, 0, "for Other Options menu\n\n"
@@ -1050,7 +1016,7 @@ str_options_menu
 str_options
 	defb AT, 2, 0, "Select option:\n\n"
 	defb "P: Program a 16K flash page\n"
-	defb "X: Erase a 64K flash sector\n"
+	defb "X: Erase a 16K flash sector\n"
 	defb "C: Copy 16K page to RAM at 32768\n"
 	defb "L: Load a 16K image from tape to\n"
 	defb "   RAM at 32768\n\n"
@@ -1101,7 +1067,7 @@ str_anykey
 
 str_erasehdr
 
-	defb TEXTBOLD, "Erase 64K Flash Sector", TEXTNORM, 0
+	defb TEXTBOLD, "Erase 16K Flash Sector", TEXTNORM, 0
 
 str_chooseerase
 	defb AT, 2, 0, "Press ", TEXTBOLD, INK, 2, "0 ", TEXTNORM, INK, 0,"to "
@@ -1109,14 +1075,14 @@ str_chooseerase
 	defb "erase, or ", TEXTBOLD, INK, 2, "X ", TEXTNORM, INK, 0, "to exit."
 
 str_eraseinfo  defb AT, 5, 0, "Sectors map to pages as follows:"
-str_sectors defb AT, 7, 0, "Sector 0  ->  Pages  0 to 3\n"
-       	defb  "Sector 1  ->  Pages  4 to 7\n"
-        defb  "Sector 2  ->  Pages  8 to 11\n"
-        defb  "Sector 3  ->  Pages 12 to 15\n"
-        defb  "Sector 4  ->  Pages 16 to 19\n"
-        defb  "Sector 5  ->  Pages 20 to 23\n"
-        defb  "Sector 6  ->  Pages 24 to 27\n"
-        defb  "Sector 7  ->  Pages 28 to 31\n\n", 0
+str_sectors defb AT, 7, 0, "Sector 0  ->  Page 0\n"
+       	defb  "Sector 1  ->  Page 1\n"
+        defb  "Sector 2  ->  Page 2\n"
+        defb  "Sector 3  ->  Page 3\n"
+        defb  "Sector 4  ->  Page 4\n"
+        defb  "Sector 5  ->  Page 5\n"
+        defb  "Sector 6  ->  Page 6\n"
+        defb  "Sector 7  ->  Page 7\n\n", 0
 
 str_erasing
 	defb "Erasing...\n", 0

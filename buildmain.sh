@@ -6,6 +6,6 @@ if [ $? -eq 0 ]; then
     if [ $? -eq 0 ]; then
         rm testrommain.bin
         echo Building tape image...
-        bin2tap -a 32768 -o testrom.tap testrom.bin
+        wine ../bin2tap -a 32768 -o testrom.tap testrom.bin
     fi
 fi
